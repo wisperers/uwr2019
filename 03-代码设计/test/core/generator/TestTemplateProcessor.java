@@ -52,6 +52,7 @@ public class TestTemplateProcessor implements DataSourceType{
 	}
 
 	@Before
+	@PrepareForTest(DataSourceConfig.class)
 	public void setUp() throws Exception {
 
 		//以下采用Mock对象的方式，做测试前的准备。
@@ -65,11 +66,23 @@ public class TestTemplateProcessor implements DataSourceType{
         //------------------------------------------------
         //以上流程请在这里实现：
         //
-        //
-        // 这里写代码
+		ConstDataSource cds = new ConstDataSource();
+		dsc = EasyMock.createMock(DataSourceConfig.class);
+		EasyMock.expect(dsc.getConstDataSource()).andReturn(cds).anyTimes();
+		EasyMock.expect(dsc.getDataSource(EasyMock.anyString())).andReturn(cds).anyTimes();
+		EasyMock.expect(dsc.getDataHolder(EasyMock.anyString())).andAnswer(() -> (cds.getDataHolder((String)EasyMock.getCurrentArguments()[0])))
+				.anyTimes();
+		PowerMock.mockStatic(DataSourceConfig.class);
+		EasyMock.expect(DataSourceConfig.newInstance()).andReturn(dsc).anyTimes();
+
+		// 这里写代码
         //
         //------------------------------------------------
 		//5. 重放所有的行为。
+
+
+
+
 		PowerMock.replayAll(dsc);
 		//初始化一个待测试类（SUT）的实例
 		tp = new TemplateProcessor();
